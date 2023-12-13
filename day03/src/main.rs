@@ -26,25 +26,26 @@ fn full_digit(grid: &CharGrid, x: i32, y: i32) -> Option<u32> {
 
 fn main() {
     let grid: CharGrid = include_str!("../input.txt").parse().unwrap();
-    let mut digits: Vec<u32> = Vec::new();
-    let mut gear_ratios: Vec<u32> = Vec::new();
+    let (digits, gear_ratios) = (0..grid.width).cartesian_product(0..grid.height).fold(
+        (Vec::new(), Vec::new()),
+        |(mut digits, mut gear_ratios), (x, y)| {
+            let elem = grid.get(x, y).unwrap();
+            if elem != '.' && !elem.is_numeric() {
+                let mut neighbours: Vec<u32> = grid
+                    .get_neighbours(x, y)
+                    .iter()
+                    .filter_map(|((xd, yd), _)| full_digit(&grid, *xd, *yd))
+                    .unique()
+                    .collect();
 
-    for (x, y) in (0..grid.width).cartesian_product(0..grid.height) {
-        let elem = grid.get(x, y).unwrap();
-        if elem != '.' && !elem.is_numeric() {
-            let mut neighbours: Vec<u32> = grid
-                .get_neighbours(x, y)
-                .iter()
-                .filter_map(|((xd, yd), _)| full_digit(&grid, *xd, *yd))
-                .unique()
-                .collect();
-
-            if elem == '*' && neighbours.len() == 2 {
-                gear_ratios.push(neighbours[0] * neighbours[1]);
+                if elem == '*' && neighbours.len() == 2 {
+                    gear_ratios.push(neighbours[0] * neighbours[1]);
+                }
+                digits.append(&mut neighbours);
             }
-            digits.append(&mut neighbours);
-        }
-    }
+            (digits, gear_ratios)
+        },
+    );
 
     let p1 = digits.iter().sum::<u32>();
     let p2 = gear_ratios.iter().sum::<u32>();

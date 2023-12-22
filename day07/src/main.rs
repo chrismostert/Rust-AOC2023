@@ -12,9 +12,7 @@ impl Ord for Hand {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         if self.type_score == other.type_score {
             for (card_self, card_other) in self.cards.iter().zip(other.cards.iter()) {
-                let (card_score_self, card_score_other) =
-                    (card_score(card_self), card_score(card_other));
-                match card_score_self.cmp(&card_score_other) {
+                match card_score(card_self).cmp(&card_score(card_other)) {
                     std::cmp::Ordering::Greater => return std::cmp::Ordering::Greater,
                     std::cmp::Ordering::Less => return std::cmp::Ordering::Less,
                     _ => (),
@@ -57,13 +55,7 @@ fn hand_type_score(cards: &[char], with_jokers: bool) -> usize {
         if n_jokers == 5 {
             counts.insert(&'A', 5);
         } else {
-            let max = counts
-                .iter()
-                .max_by_key(|entry| entry.1)
-                .unwrap()
-                .0
-                .to_owned();
-            *counts.get_mut(max).unwrap() += n_jokers;
+            *counts.iter_mut().max_by_key(|entry| *entry.1).unwrap().1 += n_jokers;
         }
     }
 
@@ -117,7 +109,7 @@ fn main() {
                 bet: bet.parse().unwrap(),
             }
         })
-        .collect::<Vec<Hand>>();
+        .collect_vec();
 
     let p1 = total_winnings(&input, false);
     let p2 = total_winnings(&input, true);

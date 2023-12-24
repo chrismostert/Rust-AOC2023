@@ -46,4 +46,16 @@ impl CharGrid {
         }
         res
     }
+
+    pub fn find_coords(&self, to_find: &char) -> Vec<(i32, i32)> {
+        let mut res = Vec::new();
+        for x in 0..self.width {
+            for y in 0..self.height {
+                if self.get(x, y).unwrap() == *to_find {
+                    res.push((x, y));
+                }
+            }
+        }
+        res
+    }
 }

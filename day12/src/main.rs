@@ -22,39 +22,40 @@ fn possible_arrangements(record: Record) -> usize {
         return 0;
     }
 
-    let cur_char = &record.conditions[0..=0];
-    if cur_char == "." {
-        return possible_arrangements(Record {
-            conditions: String::from(&record.conditions[1..]),
-            required: record.required.clone(),
-        });
-    }
-    if cur_char == "#" {
-        let mut required_iter = record.required.iter().copied();
-        let (required, rest) = (required_iter.next().unwrap(), required_iter.collect_vec());
-
-        if record.conditions[..required].chars().all(|c| c != '.')
-            && (record.conditions.len() == required
-                || &record.conditions[required..=required] != "#")
-        {
-            if required + 1 > record.conditions.len() {
-                return 1;
-            }
+    match record.conditions.chars().next() {
+        Some('.') => {
             return possible_arrangements(Record {
-                conditions: String::from(&record.conditions[required + 1..]),
-                required: rest,
+                conditions: String::from(&record.conditions[1..]),
+                required: record.required.clone(),
             });
         }
-        return 0;
+        Some('#') => {
+            let (&required, rest) = record.required.split_first().unwrap();
+            if record.conditions[..required].chars().all(|c| c != '.')
+                && (record.conditions.len() == required
+                    || &record.conditions[required..=required] != "#")
+            {
+                if required + 1 > record.conditions.len() {
+                    return 1;
+                }
+                return possible_arrangements(Record {
+                    conditions: String::from(&record.conditions[required + 1..]),
+                    required: Vec::from(rest),
+                });
+            }
+            return 0;
+        }
+        Some('?') => {
+            return possible_arrangements(Record {
+                conditions: record.conditions.clone().replacen('?', ".", 1),
+                required: record.required.clone(),
+            }) + possible_arrangements(Record {
+                conditions: record.conditions.clone().replacen('?', "#", 1),
+                required: record.required.clone(),
+            });
+        }
+        _ => unreachable!(),
     }
-
-    possible_arrangements(Record {
-        conditions: record.conditions.clone().replacen('?', ".", 1),
-        required: record.required.clone(),
-    }) + possible_arrangements(Record {
-        conditions: record.conditions.clone().replacen('?', "#", 1),
-        required: record.required.clone(),
-    })
 }
 fn main() {
     let records = include_str!("../input.txt")

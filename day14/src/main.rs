@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-
 use grid::Grid;
 use itertools::Itertools;
 
@@ -49,35 +48,31 @@ fn p1(platform: &Platform) -> usize {
 
 fn p2(platform: &Platform) -> usize {
     let mut plat = platform.clone();
-    
-    let mut cycle_count = 0;
+    let mut to_iterate = 1_000_000_000;
+
+    // Find start of cycle
     let mut cycles_seen: HashSet<Platform> = HashSet::new();
-
-    let to_reach = 1_000_000_000;
-
-    loop {
-        if !cycles_seen.contains(&plat) {
-            cycles_seen.insert(plat.clone());
-            plat.cycle();
-            cycle_count += 1;
-        } else {
-            break;
-        }
+    while !cycles_seen.contains(&plat) {
+        cycles_seen.insert(plat.clone());
+        plat.cycle();
+        to_iterate -= 1;
     }
 
-    let cycle_start = cycle_count;
-    let cycle_check = plat.clone();
+    // Find cycle length by doing one more cycle iteration
+    let mut cycle_length = 0;
+    let to_reach = plat.clone();
 
     loop {
         plat.cycle();
-        cycle_count += 1;
-        if plat == cycle_check {
+        to_iterate -= 1;
+        cycle_length += 1;
+        if plat == to_reach {
             break;
         }
     }
 
-    let cycle_length = cycle_count - cycle_start;
-    for _ in 0..((to_reach - cycle_count) % cycle_length) {
+    // Only do the remainder of cycles, skipping repeating cycles
+    for _ in 0..(to_iterate % cycle_length) {
         plat.cycle();
     }
 

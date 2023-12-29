@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use grid::Grid;
 use itertools::Itertools;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Platform {
@@ -40,43 +40,26 @@ impl Platform {
     }
 }
 
-fn p1(platform: &Platform) -> usize {
-    let mut plat = platform.clone();
-    plat.tilt();
-    plat.load_value()
+fn p1(mut platform: Platform) -> usize {
+    platform.tilt();
+    platform.load_value()
 }
 
-fn p2(platform: &Platform) -> usize {
-    let mut plat = platform.clone();
-    let mut to_iterate = 1_000_000_000;
+fn p2(mut platform: Platform) -> usize {
+    let mut hash_to_iter_no: HashMap<Platform, usize> = HashMap::new();
+    let mut iter_no = 0;
 
-    // Find start of cycle
-    let mut cycles_seen: HashSet<Platform> = HashSet::new();
-    while !cycles_seen.contains(&plat) {
-        cycles_seen.insert(plat.clone());
-        plat.cycle();
-        to_iterate -= 1;
+    while hash_to_iter_no.get(&platform).is_none() {
+        hash_to_iter_no.insert(platform.clone(), iter_no);
+        platform.cycle();
+        iter_no += 1;
     }
 
-    // Find cycle length by doing one more cycle iteration
-    let mut cycle_length = 0;
-    let to_reach = plat.clone();
-
-    loop {
-        plat.cycle();
-        to_iterate -= 1;
-        cycle_length += 1;
-        if plat == to_reach {
-            break;
-        }
+    for _ in 0..(1_000_000_000 - iter_no) % (iter_no - hash_to_iter_no.get(&platform).unwrap()) {
+        platform.cycle();
     }
 
-    // Only do the remainder of cycles, skipping repeating cycles
-    for _ in 0..(to_iterate % cycle_length) {
-        plat.cycle();
-    }
-
-    plat.load_value()
+    platform.load_value()
 }
 
 fn main() {
@@ -86,8 +69,8 @@ fn main() {
         .collect_vec();
     let platform = Platform { grid: input.into() };
 
-    let p1 = p1(&platform);
-    let p2 = p2(&platform);
+    let p1 = p1(platform.clone());
+    let p2 = p2(platform);
 
     println!("Part 1: {p1}");
     println!("Part 2: {p2}");

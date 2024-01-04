@@ -74,17 +74,17 @@ impl Ranges {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Output {
+pub enum Output<'a> {
     Accept,
     Reject,
-    Redirect(String),
+    Redirect(&'a str),
 }
 
 #[derive(Clone, Debug)]
 pub enum Operator<'a> {
-    Less(&'a str, usize, Output),
-    Greater(&'a str, usize, Output),
-    Return(Output),
+    Less(&'a str, usize, Output<'a>),
+    Greater(&'a str, usize, Output<'a>),
+    Return(Output<'a>),
 }
 
 #[derive(Debug, Clone)]

@@ -7,7 +7,7 @@ fn str_to_output(str: &str) -> Output {
     match str {
         "A" => Output::Accept,
         "R" => Output::Reject,
-        redirect => Output::Redirect(String::from(redirect)),
+        redirect => Output::Redirect(redirect),
     }
 }
 fn str_to_operator(str: &str) -> Operator {
@@ -90,10 +90,10 @@ fn parse_input(input: &str) -> (HashMap<&str, Workflow>, Vec<Part>) {
     (workflows, parts)
 }
 
-fn run_parts_through_workflows(workflows: &HashMap<&str, Workflow>, part: &Part) -> Output {
+fn run_parts_through_workflows<'a>(workflows: &'a HashMap<&str, Workflow>, part: &Part) -> Output<'a> {
     let mut result = workflows["in"].run_on(part);
     while let Output::Redirect(redirect) = result {
-        result = workflows[&redirect[..]].run_on(part);
+        result = workflows[redirect].run_on(part);
     }
     result
 }
@@ -116,7 +116,7 @@ fn amount_of_accepted_parts(workflows: &HashMap<&str, Workflow>) -> usize {
             match rule.operation {
                 Operator::Return(Output::Accept) => valid_ranges.push(current_ranges.clone()),
                 Operator::Return(Output::Redirect(redirect)) => {
-                    frontier.push((workflows[&redirect[..]].clone(), current_ranges.clone()))
+                    frontier.push((workflows[redirect].clone(), current_ranges.clone()))
                 }
                 Operator::Return(Output::Reject) => (),
                 Operator::Less(field, value, ret) => {
@@ -129,7 +129,7 @@ fn amount_of_accepted_parts(workflows: &HashMap<&str, Workflow>) -> usize {
                             ));
                         }
                         Output::Redirect(redirect) => frontier.push((
-                            workflows[&redirect[..]].clone(),
+                            workflows[redirect].clone(),
                             current_ranges.set(field, RangeValue::Upper, value - 1),
                         )),
                         Output::Reject => (),
@@ -146,7 +146,7 @@ fn amount_of_accepted_parts(workflows: &HashMap<&str, Workflow>) -> usize {
                             ));
                         }
                         Output::Redirect(redirect) => frontier.push((
-                            workflows[&redirect[..]].clone(),
+                            workflows[redirect].clone(),
                             current_ranges.set(field, RangeValue::Lower, value + 1),
                         )),
                         Output::Reject => (),

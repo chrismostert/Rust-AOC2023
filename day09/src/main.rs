@@ -1,10 +1,14 @@
 use itertools::Itertools;
 
-fn extrapolate(nums: &[isize], value: isize) -> isize {
+fn extrapolate(nums: &[isize]) -> isize {
+    _extrapolate(nums, 0)
+}
+
+fn _extrapolate(nums: &[isize], value: isize) -> isize {
     if nums.iter().tuple_windows().all(|(a, b)| a == b) {
         return value + *nums.last().unwrap();
     }
-    extrapolate(
+    _extrapolate(
         &nums
             .iter()
             .tuple_windows()
@@ -24,11 +28,13 @@ fn main() {
         })
         .collect_vec();
 
-    let p1 = input.iter().map(|nums| extrapolate(nums, 0)).sum::<isize>();
+    let p1 = input.iter().map(|nums| extrapolate(nums)).sum::<isize>();
     let p2 = input
         .iter()
-        .map(|nums| extrapolate(&nums.iter().rev().copied().collect_vec(), 0))
+        .map(|nums| extrapolate(&nums.iter().rev().copied().collect_vec()))
         .sum::<isize>();
+
+    dbg!(extrapolate(&[3791, 33646, 93223]));
 
     println!("Part 1: {p1}");
     println!("Part 2: {p2}");
